@@ -18,7 +18,34 @@ set +a
 INSTALL_DIR="${INSTALL_DIR:-${SCRIPT_DIR}/tmodloader}"
 DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/server_data}"
 
-SERVER_ROOT="${INSTALL_DIR}"
+resolve_tml_root() {
+  local base_dir="$1"
+  local candidate
+
+  for candidate in \
+    "${base_dir}" \
+    "${base_dir}/tModLoader" \
+    "${base_dir}/steamapps/common/tModLoader"
+  do
+    if [[ -f "${candidate}/start-tModLoaderServer.sh" ]]; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+if ! SERVER_ROOT="$(resolve_tml_root "${INSTALL_DIR}")"; then
+  echo "Missing tModLoader server install under ${INSTALL_DIR}"
+  echo "Checked:"
+  echo "  ${INSTALL_DIR}"
+  echo "  ${INSTALL_DIR}/tModLoader"
+  echo "  ${INSTALL_DIR}/steamapps/common/tModLoader"
+  echo "Run ./setup.sh first."
+  exit 1
+fi
+
 SERVER_SCRIPT="${SERVER_ROOT}/start-tModLoaderServer.sh"
 WORLD_DIR="${DATA_DIR}/Worlds"
 MODS_DIR="${DATA_DIR}/Mods"

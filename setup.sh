@@ -19,6 +19,24 @@ STEAMCMD_DIR="${STEAMCMD_DIR:-${SCRIPT_DIR}/steamcmd}"
 INSTALL_DIR="${INSTALL_DIR:-${SCRIPT_DIR}/tmodloader}"
 DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/server_data}"
 
+resolve_tml_root() {
+  local base_dir="$1"
+  local candidate
+
+  for candidate in \
+    "${base_dir}" \
+    "${base_dir}/tModLoader" \
+    "${base_dir}/steamapps/common/tModLoader"
+  do
+    if [[ -f "${candidate}/start-tModLoaderServer.sh" ]]; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 if [[ "${USE_STEAM_LOGIN:-false}" == "true" ]]; then
   if [[ -z "${STEAM_USERNAME:-}" || -z "${STEAM_PASSWORD:-}" ]]; then
     echo "STEAM_USERNAME and STEAM_PASSWORD must be set when USE_STEAM_LOGIN=true"
@@ -48,14 +66,23 @@ fi
   +app_update "${TML_APP_ID}" \
   +quit
 
-SERVER_BIN="${INSTALL_DIR}/start-tModLoaderServer.sh"
-
-if [[ ! -f "${SERVER_BIN}" ]]; then
-  echo "tModLoader server script was not found in ${INSTALL_DIR}"
+if ! TML_ROOT="$(resolve_tml_root "${INSTALL_DIR}")"; then
+  echo "tModLoader server script was not found under ${INSTALL_DIR}"
+  echo "Checked:"
+  echo "  ${INSTALL_DIR}"
+  echo "  ${INSTALL_DIR}/tModLoader"
+  echo "  ${INSTALL_DIR}/steamapps/common/tModLoader"
   exit 1
 fi
 
-chmod +x "${INSTALL_DIR}"/*.sh || true
+SERVER_BIN="${TML_ROOT}/start-tModLoaderServer.sh"
+
+if [[ ! -f "${SERVER_BIN}" ]]; then
+  echo "tModLoader server script was not found in ${TML_ROOT}"
+  exit 1
+fi
+
+chmod +x "${TML_ROOT}"/*.sh || true
 
 MODS_DIR="${DATA_DIR}/Mods"
 WORLD_DIR="${DATA_DIR}/Worlds"
@@ -96,6 +123,7 @@ if [[ -n "${WORKSHOP_MOD_IDS:-}" ]]; then
   fi
 
   echo "Server data directory: ${DATA_DIR}"
+  echo "tModLoader install directory: ${TML_ROOT}"
   echo "Server mods directory: ${MODS_DIR}"
 fi
 
