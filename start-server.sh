@@ -15,14 +15,16 @@ set -a
 source "${ENV_FILE}"
 set +a
 
+INSTALL_DIR="${INSTALL_DIR:-${SCRIPT_DIR}/tmodloader}"
+DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/server_data}"
+
 SERVER_ROOT="${INSTALL_DIR}"
 SERVER_SCRIPT="${SERVER_ROOT}/start-tModLoaderServer.sh"
-CONFIG_DIR="${HOME}/.local/share/Terraria/tModLoader"
-WORLD_DIR="${CONFIG_DIR}/Worlds"
-MODS_DIR="${CONFIG_DIR}/Mods"
+WORLD_DIR="${DATA_DIR}/Worlds"
+MODS_DIR="${DATA_DIR}/Mods"
 CONFIG_FILE="${SCRIPT_DIR}/serverconfig.txt"
 
-mkdir -p "${CONFIG_DIR}" "${WORLD_DIR}" "${MODS_DIR}"
+mkdir -p "${DATA_DIR}" "${WORLD_DIR}" "${MODS_DIR}"
 
 cat > "${CONFIG_FILE}" <<EOF
 world=${WORLD_DIR}/${WORLD_NAME}.wld
@@ -54,4 +56,4 @@ chmod +x "${SERVER_SCRIPT}"
 echo "Starting ${SERVER_NAME} on port ${PORT}"
 echo "World: ${WORLD_NAME}"
 
-exec "${SERVER_SCRIPT}" -savedirectory "${CONFIG_DIR}" -modpath "${MODS_DIR}" -config "${CONFIG_FILE}"
+exec "${SERVER_SCRIPT}" -tmlsavedirectory "${DATA_DIR}" -modpath "${MODS_DIR}" -config "${CONFIG_FILE}"

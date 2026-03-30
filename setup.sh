@@ -15,6 +15,10 @@ set -a
 source "${ENV_FILE}"
 set +a
 
+STEAMCMD_DIR="${STEAMCMD_DIR:-${SCRIPT_DIR}/steamcmd}"
+INSTALL_DIR="${INSTALL_DIR:-${SCRIPT_DIR}/tmodloader}"
+DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/server_data}"
+
 if [[ "${USE_STEAM_LOGIN:-false}" == "true" ]]; then
   if [[ -z "${STEAM_USERNAME:-}" || -z "${STEAM_PASSWORD:-}" ]]; then
     echo "STEAM_USERNAME and STEAM_PASSWORD must be set when USE_STEAM_LOGIN=true"
@@ -53,8 +57,9 @@ fi
 
 chmod +x "${INSTALL_DIR}"/*.sh || true
 
-MODS_DIR="${HOME}/.local/share/Terraria/tModLoader/Mods"
-mkdir -p "${MODS_DIR}"
+MODS_DIR="${DATA_DIR}/Mods"
+WORLD_DIR="${DATA_DIR}/Worlds"
+mkdir -p "${DATA_DIR}" "${MODS_DIR}" "${WORLD_DIR}"
 
 if [[ -n "${WORKSHOP_MOD_IDS:-}" ]]; then
   INSTALL_TXT="${MODS_DIR}/install.txt"
@@ -90,6 +95,7 @@ if [[ -n "${WORKSHOP_MOD_IDS:-}" ]]; then
     done
   fi
 
+  echo "Server data directory: ${DATA_DIR}"
   echo "Server mods directory: ${MODS_DIR}"
 fi
 

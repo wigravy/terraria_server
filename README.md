@@ -104,12 +104,22 @@ During setup, the script:
 
 Players still need `tModLoader` on their own PC. Missing required mods can usually be downloaded when they join the server.
 
-If the server starts but loads with zero mods, check these files in the server save directory:
+By default, the repository expects this layout next to the scripts:
 
-- `~/.local/share/Terraria/tModLoader/Mods/install.txt`
-- `~/.local/share/Terraria/tModLoader/Mods/enabled.json`
+- `./steamcmd` for SteamCMD
+- `./tmodloader` for the `tModLoader` server install
+- `./server_data` for `Mods`, `Worlds`, and other save data
+
+You can override any of these with `STEAMCMD_DIR`, `INSTALL_DIR`, and `DATA_DIR` in `.env`.
+
+If the server starts but loads with zero mods, check these files in the server data directory:
+
+- `${DATA_DIR:-./server_data}/Mods/install.txt`
+- `${DATA_DIR:-./server_data}/Mods/enabled.json`
 
 `install.txt` contains Workshop IDs. `enabled.json` contains internal mod names such as `CalamityMod` and `MagicStorage`. Both are needed for a reliable dedicated-server setup.
+
+The start script uses `-tmlsavedirectory` so `tModLoader` uses `DATA_DIR` exactly. This matches the official command-line behavior where `Mods` and `Worlds` are derived from the chosen tModLoader save directory.
 
 ## Files
 
