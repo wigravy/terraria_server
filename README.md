@@ -100,8 +100,16 @@ During setup, the script:
 - prepares the server mod list
 - attempts to download the configured Workshop mods
 - copies downloaded `.tmod` files into the server mods directory
+- writes `enabled.json` so the dedicated server actually loads the installed mods
 
 Players still need `tModLoader` on their own PC. Missing required mods can usually be downloaded when they join the server.
+
+If the server starts but loads with zero mods, check these files in the server save directory:
+
+- `~/.local/share/Terraria/tModLoader/Mods/install.txt`
+- `~/.local/share/Terraria/tModLoader/Mods/enabled.json`
+
+`install.txt` contains Workshop IDs. `enabled.json` contains internal mod names such as `CalamityMod` and `MagicStorage`. Both are needed for a reliable dedicated-server setup.
 
 ## Files
 

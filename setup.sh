@@ -93,6 +93,45 @@ if [[ -n "${WORKSHOP_MOD_IDS:-}" ]]; then
   echo "Server mods directory: ${MODS_DIR}"
 fi
 
+ENABLED_FILE="${MODS_DIR}/enabled.json"
+declare -a ENABLED_MODS=()
+
+if [[ -n "${ENABLED_MOD_NAMES:-}" ]]; then
+  IFS=',' read -r -a RAW_ENABLED_MODS <<< "${ENABLED_MOD_NAMES}"
+  for mod_name in "${RAW_ENABLED_MODS[@]}"; do
+    trimmed_mod_name="$(echo "${mod_name}" | xargs)"
+    if [[ -n "${trimmed_mod_name}" ]]; then
+      ENABLED_MODS+=("${trimmed_mod_name}")
+    fi
+  done
+else
+  while IFS= read -r mod_file; do
+    mod_name="$(basename "${mod_file}" .tmod)"
+    if [[ -n "${mod_name}" ]]; then
+      ENABLED_MODS+=("${mod_name}")
+    fi
+  done < <(find "${MODS_DIR}" -maxdepth 1 -type f -name '*.tmod' | sort)
+fi
+
+if (( ${#ENABLED_MODS[@]} > 0 )); then
+  {
+    echo "["
+    for i in "${!ENABLED_MODS[@]}"; do
+      separator=","
+      if [[ "${i}" -eq $((${#ENABLED_MODS[@]} - 1)) ]]; then
+        separator=""
+      fi
+      printf '  "%s"%s\n' "${ENABLED_MODS[$i]}" "${separator}"
+    done
+    echo "]"
+  } > "${ENABLED_FILE}"
+
+  echo "Prepared ${ENABLED_FILE} with ${#ENABLED_MODS[@]} enabled mods."
+else
+  echo "No enabled mods were detected."
+  echo "Set ENABLED_MOD_NAMES in ${ENV_FILE} if workshop downloads do not produce local .tmod files."
+fi
+
 if [[ -n "${OPTIONAL_CLIENT_MOD_IDS:-}" ]]; then
   echo "Optional client-only mod IDs: ${OPTIONAL_CLIENT_MOD_IDS}"
 fi
