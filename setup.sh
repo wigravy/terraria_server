@@ -45,7 +45,6 @@ resolve_tml_root() {
 get_release_url() {
   local api_url
   local response
-  local tag_name
 
   if [[ -n "${TMODLOADER_RELEASE_TAG:-}" ]]; then
     api_url="https://api.github.com/repos/tModLoader/tModLoader/releases/tags/${TMODLOADER_RELEASE_TAG}"
@@ -53,14 +52,11 @@ get_release_url() {
     api_url="https://api.github.com/repos/tModLoader/tModLoader/releases/latest"
   fi
 
-  response="$(curl -fsSL "${api_url}")"
-
-  tag_name="$(printf '%s\n' "${response}" | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p' | head -n 1)"
-  TML_RELEASE_TAG="${tag_name}"
-
-  printf '%s\n' "${response}" \
+  RELEASE_METADATA="$(curl -fsSL "${api_url}")"
+  TML_RELEASE_TAG="$(printf '%s\n' "${RELEASE_METADATA}" | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p' | head -n 1)"
+  RELEASE_URL="$(printf '%s\n' "${RELEASE_METADATA}" \
     | sed -n 's/.*"browser_download_url": "\([^"]*\/tModLoader\.zip\)".*/\1/p' \
-    | head -n 1
+    | head -n 1)"
 }
 
 sudo dpkg --add-architecture i386
@@ -69,7 +65,7 @@ sudo apt-get install -y curl unzip lib32gcc-s1 ca-certificates tmux
 
 mkdir -p "${SERVER_DATA}" "${TML_DIR}" "${MODS_DIR}" "${WORLDS_DIR}"
 
-if ! RELEASE_URL="$(get_release_url)"; then
+if ! get_release_url; then
   echo "Failed to resolve the tModLoader release download URL from GitHub."
   exit 1
 fi
