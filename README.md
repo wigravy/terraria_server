@@ -7,7 +7,7 @@ Language:
 
 Simple multiplayer server setup for `Terraria` on Ubuntu using `tModLoader`.
 
-This repository installs and runs a dedicated `tModLoader` server with SteamCMD using the anonymous account only.
+This repository installs and runs a dedicated `tModLoader` server from the official GitHub release archive.
 
 ## What is in this repository
 
@@ -62,7 +62,6 @@ The scripts create and use these folders under `SERVER_DATA`:
 - `Worlds`
 - `Mods`
 - `tmodloader`
-- `steamcmd`
 
 The generated `serverconfig.txt`, `cli-argsConfig.txt`, and `banlist.txt` are also stored under `SERVER_DATA`.
 
@@ -81,14 +80,14 @@ Expected workflow:
 
 Run `./setup.sh` again at any time to update the installed `tModLoader` server files in `SERVER_DATA/tmodloader`.
 
-By default, SteamCMD installs the latest public branch for the configured app ID. If you set `TMODLOADER_BRANCH`, that branch is requested instead.
+By default, the script downloads the latest stable `tModLoader.zip` release from GitHub. If you set `TMODLOADER_RELEASE_TAG`, that specific release tag is used instead.
 
 ## Configuration
 
 `.env.example` contains:
 
 - `SERVER_DATA` for the runtime root directory
-- installer settings such as `TML_APP_ID`, `TMODLOADER_BRANCH`, and `MODPACK`
+- installer settings such as `TMODLOADER_RELEASE_TAG` and `MODPACK`
 - all official Terraria dedicated-server config variables with defaults and comments
 
 `worldpath` and `modpath` are intentionally not user-configurable. The scripts always keep them under `SERVER_DATA`.
@@ -96,7 +95,7 @@ By default, SteamCMD installs the latest public branch for the configured app ID
 ## Files
 
 - `.env.example`: template for local settings
-- `setup.sh`: installs dependencies, installs or updates `tModLoader`, and creates `enabled.json` if needed
+- `setup.sh`: installs dependencies, downloads or updates `tModLoader` from GitHub, and creates `enabled.json` if needed
 - `start-server.sh`: writes `serverconfig.txt` under `SERVER_DATA` and starts the server
 - `docs/MODS.md`: grouped sample mod list
 - `docs/README.ru.md`: Russian README

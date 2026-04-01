@@ -19,10 +19,10 @@ SERVER_DATA="${SERVER_DATA:-server_data}"
 if [[ "${SERVER_DATA}" != /* ]]; then
   SERVER_DATA="${SCRIPT_DIR}/${SERVER_DATA}"
 fi
-STEAMCMD_DIR="${SERVER_DATA}/steamcmd"
 TML_DIR="${SERVER_DATA}/tmodloader"
 MODS_DIR="${SERVER_DATA}/Mods"
 WORLDS_DIR="${SERVER_DATA}/Worlds"
+TMP_ZIP="/tmp/tmodloader_release.zip"
 
 resolve_tml_root() {
   local base_dir="$1"
@@ -42,28 +42,49 @@ resolve_tml_root() {
   return 1
 }
 
+get_release_url() {
+  local api_url
+  local response
+  local tag_name
+
+  if [[ -n "${TMODLOADER_RELEASE_TAG:-}" ]]; then
+    api_url="https://api.github.com/repos/tModLoader/tModLoader/releases/tags/${TMODLOADER_RELEASE_TAG}"
+  else
+    api_url="https://api.github.com/repos/tModLoader/tModLoader/releases/latest"
+  fi
+
+  response="$(curl -fsSL "${api_url}")"
+
+  tag_name="$(printf '%s\n' "${response}" | sed -n 's/.*"tag_name": "\([^"]*\)".*/\1/p' | head -n 1)"
+  TML_RELEASE_TAG="${tag_name}"
+
+  printf '%s\n' "${response}" \
+    | sed -n 's/.*"browser_download_url": "\([^"]*\/tModLoader\.zip\)".*/\1/p' \
+    | head -n 1
+}
+
 sudo dpkg --add-architecture i386
 sudo apt-get update
-sudo apt-get install -y curl wget tar unzip lib32gcc-s1 ca-certificates tmux
+sudo apt-get install -y curl unzip lib32gcc-s1 ca-certificates tmux
 
-mkdir -p "${SERVER_DATA}" "${STEAMCMD_DIR}" "${TML_DIR}" "${MODS_DIR}" "${WORLDS_DIR}"
+mkdir -p "${SERVER_DATA}" "${TML_DIR}" "${MODS_DIR}" "${WORLDS_DIR}"
 
-if [[ ! -x "${STEAMCMD_DIR}/steamcmd.sh" ]]; then
-  wget -O /tmp/steamcmd_linux.tar.gz https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz
-  tar -xzf /tmp/steamcmd_linux.tar.gz -C "${STEAMCMD_DIR}"
+if ! RELEASE_URL="$(get_release_url)"; then
+  echo "Failed to resolve the tModLoader release download URL from GitHub."
+  exit 1
 fi
 
-APP_UPDATE_ARGS=("${TML_APP_ID}")
-if [[ -n "${TMODLOADER_BRANCH:-}" ]]; then
-  APP_UPDATE_ARGS+=("-beta" "${TMODLOADER_BRANCH}")
+if [[ -z "${RELEASE_URL}" ]]; then
+  echo "Could not find tModLoader.zip in the selected GitHub release."
+  exit 1
 fi
-APP_UPDATE_ARGS+=("validate")
 
-"${STEAMCMD_DIR}/steamcmd.sh" \
-  +force_install_dir "${TML_DIR}" \
-  +login anonymous \
-  +app_update "${APP_UPDATE_ARGS[@]}" \
-  +quit
+echo "Downloading tModLoader release ${TML_RELEASE_TAG:-unknown} from GitHub"
+curl -fL "${RELEASE_URL}" -o "${TMP_ZIP}"
+
+find "${TML_DIR}" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+unzip -oq "${TMP_ZIP}" -d "${TML_DIR}"
+rm -f "${TMP_ZIP}"
 
 if ! TML_ROOT="$(resolve_tml_root "${TML_DIR}")"; then
   echo "tModLoader server script was not found under ${TML_DIR}"
@@ -111,7 +132,7 @@ fi
 
 echo
 echo "Server data directory: ${SERVER_DATA}"
-echo "SteamCMD directory: ${STEAMCMD_DIR}"
+echo "GitHub release tag: ${TML_RELEASE_TAG:-unknown}"
 echo "tModLoader install directory: ${TML_ROOT}"
 echo "Mods directory: ${MODS_DIR}"
 echo "Worlds directory: ${WORLDS_DIR}"

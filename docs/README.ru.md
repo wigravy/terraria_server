@@ -7,7 +7,7 @@
 
 Простой мультиплеерный сервер `Terraria` на Ubuntu с использованием `tModLoader`.
 
-Этот репозиторий устанавливает и запускает выделенный сервер `tModLoader` через SteamCMD только с анонимным входом.
+Этот репозиторий устанавливает и запускает выделенный сервер `tModLoader` из официального GitHub-архива релиза.
 
 ## Что есть в репозитории
 
@@ -57,7 +57,6 @@ chmod +x setup.sh start-server.sh
 - `Worlds`
 - `Mods`
 - `tmodloader`
-- `steamcmd`
 
 Файлы `serverconfig.txt`, `cli-argsConfig.txt` и `banlist.txt` также создаются внутри `SERVER_DATA`.
 
@@ -76,14 +75,14 @@ chmod +x setup.sh start-server.sh
 
 Повторный запуск `./setup.sh` обновляет установленные файлы `tModLoader` в `SERVER_DATA/tmodloader`.
 
-По умолчанию SteamCMD устанавливает последнюю публичную ветку. Если указать `TMODLOADER_BRANCH`, будет запрошена эта ветка.
+По умолчанию скрипт скачивает последний стабильный `tModLoader.zip` из GitHub releases. Если указать `TMODLOADER_RELEASE_TAG`, будет использован конкретный тег релиза.
 
 ## Конфигурация
 
 `.env.example` содержит:
 
 - `SERVER_DATA` для корневой директории данных
-- параметры установки, такие как `TML_APP_ID`, `TMODLOADER_BRANCH` и `MODPACK`
+- параметры установки, такие как `TMODLOADER_RELEASE_TAG` и `MODPACK`
 - все официальные переменные конфигурации выделенного сервера Terraria со значениями по умолчанию и комментариями
 
 `worldpath` и `modpath` намеренно не выносятся в пользовательские переменные. Скрипты всегда держат их внутри `SERVER_DATA`.

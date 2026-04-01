@@ -19,7 +19,6 @@ SERVER_DATA="${SERVER_DATA:-server_data}"
 if [[ "${SERVER_DATA}" != /* ]]; then
   SERVER_DATA="${SCRIPT_DIR}/${SERVER_DATA}"
 fi
-STEAMCMD_DIR="${SERVER_DATA}/steamcmd"
 TML_DIR="${SERVER_DATA}/tmodloader"
 MODS_DIR="${SERVER_DATA}/Mods"
 WORLDS_DIR="${SERVER_DATA}/Worlds"
@@ -60,7 +59,7 @@ WORLD_FILE="${WORLDS_DIR}/${WORLD_NAME}.wld"
 BANLIST_PATH="${SERVER_DATA}/banlist.txt"
 CLI_ARGS_FILE="${SERVER_DATA}/cli-argsConfig.txt"
 
-mkdir -p "${SERVER_DATA}" "${STEAMCMD_DIR}" "${TML_DIR}" "${MODS_DIR}" "${WORLDS_DIR}"
+mkdir -p "${SERVER_DATA}" "${TML_DIR}" "${MODS_DIR}" "${WORLDS_DIR}"
 
 cat > "${CONFIG_FILE}" <<EOF
 world=${WORLD_FILE}
