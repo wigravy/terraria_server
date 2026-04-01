@@ -15,8 +15,14 @@ set -a
 source "${ENV_FILE}"
 set +a
 
-INSTALL_DIR="${INSTALL_DIR:-${SCRIPT_DIR}/tmodloader}"
-DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/server_data}"
+SERVER_DATA="${SERVER_DATA:-${SCRIPT_DIR}/server_data}"
+STEAMCMD_DIR="${SERVER_DATA}/steamcmd"
+TML_DIR="${SERVER_DATA}/tmodloader"
+MODS_DIR="${SERVER_DATA}/Mods"
+WORLDS_DIR="${SERVER_DATA}/Worlds"
+SERVER_ROOT=""
+SERVER_SCRIPT=""
+CONFIG_FILE="${SERVER_DATA}/serverconfig.txt"
 
 resolve_tml_root() {
   local base_dir="$1"
@@ -36,25 +42,25 @@ resolve_tml_root() {
   return 1
 }
 
-if ! SERVER_ROOT="$(resolve_tml_root "${INSTALL_DIR}")"; then
-  echo "Missing tModLoader server install under ${INSTALL_DIR}"
+if ! SERVER_ROOT="$(resolve_tml_root "${TML_DIR}")"; then
+  echo "Missing tModLoader server install under ${TML_DIR}"
   echo "Checked:"
-  echo "  ${INSTALL_DIR}"
-  echo "  ${INSTALL_DIR}/tModLoader"
-  echo "  ${INSTALL_DIR}/steamapps/common/tModLoader"
+  echo "  ${TML_DIR}"
+  echo "  ${TML_DIR}/tModLoader"
+  echo "  ${TML_DIR}/steamapps/common/tModLoader"
   echo "Run ./setup.sh first."
   exit 1
 fi
 
 SERVER_SCRIPT="${SERVER_ROOT}/start-tModLoaderServer.sh"
-WORLD_DIR="${DATA_DIR}/Worlds"
-MODS_DIR="${DATA_DIR}/Mods"
-CONFIG_FILE="${SCRIPT_DIR}/serverconfig.txt"
+WORLD_FILE="${WORLDS_DIR}/${WORLD_NAME}.wld"
+BANLIST_PATH="${SERVER_DATA}/banlist.txt"
+CLI_ARGS_FILE="${SERVER_DATA}/cli-argsConfig.txt"
 
-mkdir -p "${DATA_DIR}" "${WORLD_DIR}" "${MODS_DIR}"
+mkdir -p "${SERVER_DATA}" "${STEAMCMD_DIR}" "${TML_DIR}" "${MODS_DIR}" "${WORLDS_DIR}"
 
 cat > "${CONFIG_FILE}" <<EOF
-world=${WORLD_DIR}/${WORLD_NAME}.wld
+world=${WORLD_FILE}
 autocreate=${WORLD_SIZE}
 seed=${WORLD_SEED}
 worldname=${WORLD_NAME}
@@ -63,13 +69,34 @@ maxplayers=${MAX_PLAYERS}
 port=${PORT}
 password=${PASSWORD}
 motd=${MOTD}
-secure=1
-upnp=0
-npcstream=60
-priority=1
-banlist=banlist.txt
-language=en-US
+worldpath=${WORLDS_DIR}
+banlist=${BANLIST_PATH}
+secure=${SECURE}
+language=${LANGUAGE}
+upnp=${UPNP}
+npcstream=${NPCSTREAM}
+priority=${PRIORITY}
+journeypermission_time_setfrozen=${JOURNEYPERMISSION_TIME_SETFROZEN}
+journeypermission_time_setdawn=${JOURNEYPERMISSION_TIME_SETDAWN}
+journeypermission_time_setnoon=${JOURNEYPERMISSION_TIME_SETNOON}
+journeypermission_time_setdusk=${JOURNEYPERMISSION_TIME_SETDUSK}
+journeypermission_time_setmidnight=${JOURNEYPERMISSION_TIME_SETMIDNIGHT}
+journeypermission_godmode=${JOURNEYPERMISSION_GODMODE}
+journeypermission_wind_setstrength=${JOURNEYPERMISSION_WIND_SETSTRENGTH}
+journeypermission_rain_setstrength=${JOURNEYPERMISSION_RAIN_SETSTRENGTH}
+journeypermission_time_setspeed=${JOURNEYPERMISSION_TIME_SETSPEED}
+journeypermission_rain_setfrozen=${JOURNEYPERMISSION_RAIN_SETFROZEN}
+journeypermission_wind_setfrozen=${JOURNEYPERMISSION_WIND_SETFROZEN}
+journeypermission_increaseplacementrange=${JOURNEYPERMISSION_INCREASEPLACEMENTRANGE}
+journeypermission_setdifficulty=${JOURNEYPERMISSION_SETDIFFICULTY}
+journeypermission_biomespread_setfrozen=${JOURNEYPERMISSION_BIOMESPREAD_SETFROZEN}
+journeypermission_setspawnrate=${JOURNEYPERMISSION_SETSPAWNRATE}
 modpath=${MODS_DIR}
+EOF
+
+cat > "${CLI_ARGS_FILE}" <<EOF
+-tmlsavedirectory ${SERVER_DATA}
+-modpath ${MODS_DIR}
 EOF
 
 if [[ ! -x "${SERVER_SCRIPT}" ]]; then
@@ -80,7 +107,18 @@ fi
 
 chmod +x "${SERVER_SCRIPT}"
 
+SERVER_ARGS=(
+  -tmlsavedirectory "${SERVER_DATA}"
+  -modpath "${MODS_DIR}"
+  -config "${CONFIG_FILE}"
+)
+
+if [[ -n "${MODPACK:-}" ]]; then
+  SERVER_ARGS+=(-modpack "${MODPACK}")
+fi
+
 echo "Starting ${SERVER_NAME} on port ${PORT}"
 echo "World: ${WORLD_NAME}"
+echo "Server data directory: ${SERVER_DATA}"
 
-exec "${SERVER_SCRIPT}" -tmlsavedirectory "${DATA_DIR}" -modpath "${MODS_DIR}" -config "${CONFIG_FILE}"
+exec "${SERVER_SCRIPT}" "${SERVER_ARGS[@]}"

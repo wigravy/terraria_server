@@ -40,13 +40,11 @@ Mods are grouped below and ordered by gameplay impact, from major content change
 | --- | --- | --- |
 | Calamity Mod Extra Music | `2835214226` | Optional extra music pack for players. Not needed on the server. |
 
-## Server mod IDs
+## Notes
 
-These IDs are used in `.env.example`:
+This file is now only a reference list for a sample mod pack.
 
-```text
-2824688072,2824688266,2599842771,2669644269,3338554501,3316697363,2824688804,2908170107,2563309347,2831360228
-```
+The setup script does not download mods. Put your own exported `.tmod` files in `server_data/Mods`.
 
 ## Sources
 

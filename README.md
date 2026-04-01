@@ -7,32 +7,20 @@ Language:
 
 Simple multiplayer server setup for `Terraria` on Ubuntu using `tModLoader`.
 
-This build is centered on `Calamity Mod` and a small set of supporting multiplayer mods.
-
-Mod list:
-
-- English: [docs/MODS.md](./docs/MODS.md)
-- Russian: [docs/MODS.ru.md](./docs/MODS.ru.md)
+This repository installs and runs a dedicated `tModLoader` server with SteamCMD using the anonymous account only.
 
 ## What is in this repository
 
 - shell scripts for setup and startup
-- config templates
-- mod IDs for the server pack
+- `.env.example` with supported server settings
+- documentation for a sample mod pack
 
 This repository does not include Terraria, `tModLoader`, mod files, or game source code.
 
 ## Requirements
 
 - Ubuntu `22.04` or newer
-- `tModLoader`
-- open port `7777` on your router/firewall if players join over the internet
-
-## Server requirements
-
-- CPU: modern 2-core CPU minimum
-- RAM: `4 GB` minimum, `8 GB` recommended for a smoother modded multiplayer server
-- Storage: at least `10 GB` free space for `tModLoader`, mods, and world files
+- open TCP port `7777` on your router/firewall if players join over the internet
 
 ## Quick start
 
@@ -43,7 +31,7 @@ This repository does not include Terraria, `tModLoader`, mod files, or game sour
 cp .env.example .env
 ```
 
-3. Edit `.env`.
+3. Edit `.env` only if you need to change defaults.
 4. Make the scripts executable:
 
 ```bash
@@ -56,77 +44,61 @@ chmod +x setup.sh start-server.sh
 ./setup.sh
 ```
 
-6. Start the server:
+6. Put your `.tmod` files in `server_data/Mods`.
+7. If you exported mods from local tModLoader and have `install.txt`, place it in `server_data/Mods` as well.
+8. If `server_data/Mods/enabled.json` does not exist, rerun `./setup.sh` once to generate it from the local `.tmod` files.
+9. Start the server:
 
 ```bash
 ./start-server.sh
 ```
 
-## Configuration
+## Data layout
 
-Main settings in `.env`:
+By default, all server runtime files are stored in `./server_data` next to the scripts. You can move the whole runtime tree by changing `SERVER_DATA` in `.env`.
 
-```dotenv
-SERVER_NAME=My tModLoader Server
-WORLD_NAME=modded-world
-WORLD_SEED=
-WORLD_SIZE=2
-WORLD_DIFFICULTY=0
-MAX_PLAYERS=8
-PORT=7777
-PASSWORD=
-MOTD=Welcome to the modded server
-```
+The scripts create and use these folders under `SERVER_DATA`:
 
-Useful values:
+- `Worlds`
+- `Mods`
+- `tmodloader`
+- `steamcmd`
 
-- `WORLD_SIZE`: `1` small, `2` medium, `3` large
-- `WORLD_DIFFICULTY`: `0` Classic, `1` Expert, `2` Master, `3` Journey
-
-## World seed
-
-`WORLD_SEED` is optional. If you leave it empty, Terraria will generate a random world.
+The generated `serverconfig.txt`, `cli-argsConfig.txt`, and `banlist.txt` are also stored under `SERVER_DATA`.
 
 ## Mods
 
-The server is configured with the Calamity-based multiplayer pack from [docs/MODS.md](./docs/MODS.md).
+The scripts do not download mods.
 
-Notes:
+Expected workflow:
 
-- `Calamity Mod Extra Music` is client-only and is not installed on the server
+- place `.tmod` files in `SERVER_DATA/Mods`
+- optionally place your exported `install.txt` in the same folder
+- keep your own `enabled.json` if you already exported one
+- if `enabled.json` is missing, `setup.sh` creates it from the `.tmod` filenames present in `Mods`
 
-During setup, the script:
+## Updating
 
-- prepares the server mod list
-- attempts to download the configured Workshop mods
-- copies downloaded `.tmod` files into the server mods directory
-- writes `enabled.json` so the dedicated server actually loads the installed mods
+Run `./setup.sh` again at any time to update the installed `tModLoader` server files in `SERVER_DATA/tmodloader`.
 
-Players still need `tModLoader` on their own PC. Missing required mods can usually be downloaded when they join the server.
+By default, SteamCMD installs the latest public branch for the configured app ID. If you set `TMODLOADER_BRANCH`, that branch is requested instead.
 
-By default, the repository expects this layout next to the scripts:
+## Configuration
 
-- `./steamcmd` for SteamCMD
-- `./tmodloader` for the `tModLoader` server install
-- `./server_data` for `Mods`, `Worlds`, and other save data
+`.env.example` contains:
 
-You can override any of these with `STEAMCMD_DIR`, `INSTALL_DIR`, and `DATA_DIR` in `.env`.
+- `SERVER_DATA` for the runtime root directory
+- installer settings such as `TML_APP_ID`, `TMODLOADER_BRANCH`, and `MODPACK`
+- all official Terraria dedicated-server config variables with defaults and comments
 
-If the server starts but loads with zero mods, check these files in the server data directory:
-
-- `${DATA_DIR:-./server_data}/Mods/install.txt`
-- `${DATA_DIR:-./server_data}/Mods/enabled.json`
-
-`install.txt` contains Workshop IDs. `enabled.json` contains internal mod names such as `CalamityMod` and `MagicStorage`. Both are needed for a reliable dedicated-server setup.
-
-The start script uses `-tmlsavedirectory` so `tModLoader` uses `DATA_DIR` exactly. This matches the official command-line behavior where `Mods` and `Worlds` are derived from the chosen tModLoader save directory.
+`worldpath` and `modpath` are intentionally not user-configurable. The scripts always keep them under `SERVER_DATA`.
 
 ## Files
 
 - `.env.example`: template for local settings
-- `setup.sh`: installs dependencies, downloads `tModLoader`, prepares mods
-- `start-server.sh`: creates `serverconfig.txt` and starts the server
-- `docs/MODS.md`: grouped mod list with descriptions
+- `setup.sh`: installs dependencies, installs or updates `tModLoader`, and creates `enabled.json` if needed
+- `start-server.sh`: writes `serverconfig.txt` under `SERVER_DATA` and starts the server
+- `docs/MODS.md`: grouped sample mod list
 - `docs/README.ru.md`: Russian README
 - `docs/MODS.ru.md`: Russian mod list
 
