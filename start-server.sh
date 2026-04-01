@@ -15,7 +15,10 @@ set -a
 source "${ENV_FILE}"
 set +a
 
-SERVER_DATA="${SERVER_DATA:-${SCRIPT_DIR}/server_data}"
+SERVER_DATA="${SERVER_DATA:-server_data}"
+if [[ "${SERVER_DATA}" != /* ]]; then
+  SERVER_DATA="${SCRIPT_DIR}/${SERVER_DATA}"
+fi
 STEAMCMD_DIR="${SERVER_DATA}/steamcmd"
 TML_DIR="${SERVER_DATA}/tmodloader"
 MODS_DIR="${SERVER_DATA}/Mods"
